@@ -37,12 +37,14 @@ export const getAllFaculty = (req, res) => {
     }
     User
         .paginate({}, pageOptions, (err, result) => {
-            if(err)
+            if(err){
                 return res.status(400).json({
                     error: true,
                     errorMessage: err
                 })
-            res.json(result)
+            }else {
+                res.json(result)
+            }
         })
     // User.findOne({ _id: userId })
     //     .then((user) => {

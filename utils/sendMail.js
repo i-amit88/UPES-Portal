@@ -1,16 +1,16 @@
 import {createTransport} from 'nodemailer'
 
 const smtpConfig = {
-    host: "",
-    port: 587,
-    secure: false,
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
-        user: "",
-        pass: ""
+        user: "s.bhupender2401@gmail.com",
+        pass: "gwjrsuzbhzpxckiv"
     }
 }
 
-export const mailTransport = nodemailer.createTransport(smtpConfig)
+export const mailTransport = createTransport(smtpConfig)
 mailTransport.verify((error, success) => {
     if(error)
         console.log(`Error: ${error}`)
@@ -18,7 +18,8 @@ mailTransport.verify((error, success) => {
         console.log("Mail SMTP Success")
 })
 export const sendMail = (mailOptions) => {
-    mailTransport.sendMail(mailOptions, (res) => {
+    return mailTransport.sendMail(mailOptions, (res) => {
+        console.log(res)
         return res
     })
 }

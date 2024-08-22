@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     firstName: String,
     lastName: String,
     sapId: {
-        type: Number,
+        type: String,
         required: true,
         unique: true
     },
@@ -120,9 +120,12 @@ export const usersResource = {
             password: {
                 type: 'password'
             },
-            // encpy_password: {
-            //     type: 'password',
-            // },
+            profilePic: {
+                isVisible: false
+            },
+            encpy_password: {
+                isVisible: false
+            },
             salt: {
                 isVisible: false
             },

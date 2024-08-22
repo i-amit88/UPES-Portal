@@ -29,7 +29,6 @@ import { router as evaluateRouter } from './routes/evaluate.js'
 
 //AdminJs Resources
 import { User, usersResource } from './models/User.js'
-import { designationResource } from './models/Designation.js'
 import { schoolResource } from './models/School.js'
 import { Course, courseResource } from './models/Course.js'
 import { timeTableResource } from './models/Timetable.js'
@@ -73,6 +72,7 @@ mongoose.connect(process.env.DATABASE, {
     showLog('Datbase Connected')
 }).catch(err => showLog(err))
 
+
 //Session Store For Logged In Users AdminJs
 const sessionStore =  MongoStore.create({
     client: mongoose.connection.getClient(),
@@ -81,10 +81,10 @@ const sessionStore =  MongoStore.create({
     autoRemove: "interval",
     autoRemoveInterval: 1
 })
+
 //Admin Js Config
 const adminJs = new AdminJS({
     resources: [
-        designationResource, 
         usersResource, 
         schoolResource, 
         courseResource, 
@@ -94,24 +94,25 @@ const adminJs = new AdminJS({
         evaluateResource
     ],
     branding: {
-        companyName: "SoCS Information System",
+        companyName: "SOCIS",
         logo: '',
         withMadeWithLove: false,
         
     },
 
 })
+
 //Authenticate Function
 const authenticate = async (email, password) => {
     const DEFAULT_ADMIN = {
-        email: '',
-        password: 'password',
-        name: ''
+        email: 'admin@admin.com',
+        password: '123456',
+        name: 'Admin'
     }
     return Promise.resolve(authenticateAdmin(email, password)
         .then(user => {
             if(user.error1 || user.error2 || user.error3){
-                return Promise.resolve(DEFAULT_ADMIN)
+                return false
             }
             if(user){
                 DEFAULT_ADMIN.email = user.email
@@ -119,9 +120,10 @@ const authenticate = async (email, password) => {
                 return Promise.resolve(DEFAULT_ADMIN)
             }
             else      
-                return Promise.resolve(DEFAULT_ADMIN)
+                return false
         }))
 }
+
 //Router For AdminJs Authenticated Routes
 const router = AdminJSExpress.buildAuthenticatedRouter(
     adminJs,
@@ -152,69 +154,6 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
     credentials: true,
 }))
-let count = 0;
-let notFound = []
-// fs.createReadStream('./data.csv')
-//     .pipe(parse({ delimiter: ",", from_line: 2 }))
-//     .on("data", (row) => {
-//                     const student = {
-//                         name: row[3],
-//                         sapId: row[1],
-//                         rollNumber: row[2],
-//                         school: row[4],
-//                         semester: row[5],
-//                         program: row[7],
-//                         batch: row[10].split('-').pop(),
-//                         status: row[8],
-//                         yearOfEnrollment: row[9]
-//                     }
-//                     let newstudent = new Student(student)
-//                     newstudent.save()
-//                         .then((student) => {
-//                             console.log(student)
-//                         })
-//                         .catch((error) => {
-//                             return console.log(error)
-//                         })
-//     })
-// fs.createReadStream('./socsev.csv')
-//     .pipe(parse({ delimiter: ",", from_line: 2}))
-//     .on("data", (row) => {
-//         let names = row[7].split(" ", 3)
-//         const newEvaa = {
-//             firstName: names[0],
-//             lastName: names[1] + (names[2] ? " "+names[2]: '')
-//         }
-//         const newEva = {
-//             programName: row[2],
-//             semester: row[3],
-//             subjectCode: row[4],
-//             subjectName: row[5],
-//             evaluator: "",
-//             strength: row[8],
-//             batchName: row[9],
-            
-//         }
-//         User.findOne({ firstName: newEvaa.firstName, lastName: (newEvaa.lastName ? newEvaa.lastName : "") })
-//             .then((user) => {
-//                 if(!user) {
-//                     notFound.push(newEvaa)
-//                 }else {
-//                     newEva.evaluator = user._id.toString()
-//                     let eva = new Evaluate(newEva)
-//                     eva.save().then((data) => {
-//                         console.log(data)
-//                     })
-//                     .catch(err => {
-//                         console.log(err)
-//                     })
-//                 }
-//             })
-//             .catch((error) => {
-//                 console.log(error)
-//             })
-//         console.log(newEva)
-//     })
 
 //Request Limiter
 app.use(rateLimiter)

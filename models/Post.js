@@ -34,6 +34,9 @@ export const postResource = {
     resource: Post,
     options:{
         properties: {
+            attachmentFile: {
+                isVisible: false
+            },
             createdAt: {
                 isVisible: false
             },

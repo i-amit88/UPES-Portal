@@ -4,7 +4,32 @@ import { expressjwt } from 'express-jwt'
 import crypto from 'crypto'
 import { cache } from '../middlewares/cache.js'
 import { showLog } from '../utils/timeLog.js'
-import { error } from 'console'
+import fs from 'fs'
+import path from 'path'
+
+const __dirname = path.resolve()
+
+//Import Public Key
+const PUBLIC_KEY = fs
+    .readFileSync(
+        path.join(
+            __dirname,
+            'keys',
+            'public.pem'
+        ),
+        'utf-8'
+    )
+
+//Import Public Key
+const PRIVATE_KEY = fs
+    .readFileSync(
+        path.join(
+            __dirname,
+            'keys',
+            'private.pem'
+        ),
+        'utf-8'
+    )
 
 //Create Hashed Password
 const createHash = async (plainText, salt) => {
@@ -63,7 +88,12 @@ export const outlookCheck = (req, res) => {
                     role: user.role,
                     },
                 },
-                process.env.SECRET
+                PRIVATE_KEY, //Private Key
+                {
+                    algorithm: 'RS256', //Algorithm
+                    allowInsecureKeySizes: false, //Must Be False In Production
+                    expiresIn: '30min' //Expiry 
+                }
             )
             const { _id, firstName, lastName, sapId, designations, role } = user
             res.cookie("socis", token, {
@@ -102,7 +132,22 @@ export const signin = (req, res) => {
                             error: true
                         })
 
-                        const token = jwt.sign({_id: user._id, user: { sapId: user.sapId, firstName: user.firstName, role: user.role, outlookRefreshToken: user.outlookToken }}, process.env.SECRET)
+                        const token = jwt.sign(
+                            {
+                                _id: user._id,
+                                user: {
+                                sapId: user.sapId,
+                                firstName: user.firstName,
+                                role: user.role,
+                                },
+                            },
+                            PRIVATE_KEY, //Private Key
+                            {
+                                algorithm: 'RS256', //Algorithm
+                                allowInsecureKeySizes: false, //Must Be False In Production
+                                expiresIn: '30min' //Expiry 
+                            }
+                        )
                         let time = new Date()
                         const { _id, firstName, lastName, sapId, designations, role } = user
                         time.setTime(time.getTime() + (1800 * 1000))
@@ -137,6 +182,7 @@ export const loggout = (req, res) => {
         redirect: true
     })
 }
+
 export const changePasswordFlag = (req, res) => {
     showLog('changePasswordFlag() Function Called At controllers/auth.js')
 
@@ -262,7 +308,6 @@ export const getAllUser = (req, res) => {
         })
 }
 
-
 export const getUsers = (req, res) => {
     showLog('getUsers() Function Called At controllers/auth.js')
 
@@ -282,6 +327,7 @@ export const getUsers = (req, res) => {
             res.json(result)
         })
 }
+
 export const getFaculty = (req, res) => {
     showLog('getFaculty() Function Called At controllers/auth.js')
 
@@ -329,6 +375,7 @@ export const authenticateAdmin = (email, password) => {
     return User.findOne({email})
                 .select('-profilePic')
                 .then((user) => {
+                    console.log(user)
                     if(!user) 
                         return { error1 : true }
                     if(!user.authenticate(password))
@@ -353,7 +400,7 @@ export const authenticateAdmin = (email, password) => {
 
 //Middleware For Bearer Token Check
 export const isSignedIn = expressjwt({
-    secret: `sMWx4NyJMJ21aDee0ZOqN70a5YBCdeCO`,
+    secret: PUBLIC_KEY,
     userProperty: 'auth',
     algorithms: ['SHA1', 'RS256', 'HS256'],
 })
@@ -406,7 +453,6 @@ export const uploadProfile = (req, res) => {
             })
         })
 }
-
 
 //Middleware For Check If The User Is Valid
 export const isAuthenticated =  (req, res, next) => {
